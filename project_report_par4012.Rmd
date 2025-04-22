@@ -150,6 +150,24 @@ gunzip GRCh38.primary_assembly.genome.fa.gz
 gunzip gencode.v47.basic.annotation.gtf.gz
 ```
 
+I then write a slurm script named `03_star_indexing.sh` to build the STAR reference index. For the purposes of this report, please find just the `STAR` command within the slurm script below. I ran `--runThreadN 20` to accelerate the process by parallelizing the workload across CPU cores and chose `--sjdbOverhang 99` as my reads are 100bp long.
+
+```{bash, eval=FALSE}
+STAR --runMode genomeGenerate \
+     --runThreadN 20 \
+     --genomeDir $GENOME_DIR \
+     --genomeFastaFiles $GENOME_FASTA \
+     --sjdbGTFfile $GTF_FILE \
+     --sjdbOverhang 99
+```
+
+I execute this slurm script using the following:
+
+```{bash, eval=FALSE}
+chmod +x 03_star_indexing.sh
+sbatch 03_star_indexing.sh
+```
+
 I create the following directories to store all the project outputs.
 
 ```{bash, eval=FALSE}
@@ -159,11 +177,11 @@ mkdir aligned_reads
 cd aligned_reads
 ```
 
-I then move forward with aligning all the reads using STAR. This process is completed via a slurm script named `03_batch_align.sh`. Similarly, I run the below to submit this script:
+I then move forward with aligning all the reads using STAR. This process is completed via a slurm script named `04_batch_align.sh`. Similarly, I run the below to submit this script:
 
 ```{bash, eval=FALSE}
-chmod +x 03_batch_align.sh
-sbatch 03_batch_align.sh
+chmod +x 04_batch_align.sh
+sbatch 04_batch_align.sh
 ```
 
 For the purposes of this report, please find just the `STAR` command within the slurm script below, with an explanation of each parameter.
@@ -194,20 +212,20 @@ STAR --runThreadN 20 \
 
 I will assess the quality of the alignment using `MultiQC` in a later stage.
 
-I then index all my reads using the slurm script `04_index_bams.sh`, which I execute by following the below:
+I then index all my reads using the slurm script `05_index_bams.sh`, which I execute by following the below:
 
 ```{bash, eval=FALSE}
-chmod +x 04_index_bams.sh
-sbatch 04_index_bams.sh
+chmod +x 05_index_bams.sh
+sbatch 05_index_bams.sh
 ```
 
 ### QoRTs
 
-I now use `QoRTs` to provide a comprehensive quality control metrics beyond basic alignment stats, including gene body coverage, splice junction annotation, and strand specificity checks. Running it helps ensure that the RNA-seq data is high-quality and suitable for downstream differential expression and splicing analyses. I run QoRTs by writing a slurm script `05_run_qorts_all.sh`, which I save within a new directory `qorts_out` inside the `project_outputs` directory. I execute the script using the below
+I now use `QoRTs` to provide a comprehensive quality control metrics beyond basic alignment stats, including gene body coverage, splice junction annotation, and strand specificity checks. Running it helps ensure that the RNA-seq data is high-quality and suitable for downstream differential expression and splicing analyses. I run QoRTs by writing a slurm script `06_run_qorts_all.sh`, which I save within a new directory `qorts_out` inside the `project_outputs` directory. I execute the script using the below
 
 ```{bash, eval=FALSE}
-chmod +x 05_run_qorts_all.sh
-sbatch 05_run_qorts_all.sh
+chmod +x 06_run_qorts_all.sh
+sbatch 06_run_qorts_all.sh
 ```
 
 For the purposes of this report, please find just the `QoRTs` command within the slurm script below, with an explanation of each parameter.
@@ -232,7 +250,7 @@ The script runs successfully. I will assess the quality of the alignment using `
 
 ### FeatureCounts
 
-Now I want to use `featureCounts` as it efficiently quantifies how many reads align to each gene, producing a gene-level count matrix that’s essential for downstream differential expression analysis. I plan to include this in the `MultiQC` report and use the generated `txt` to perform downstream analyses. I write a slurm script `06_run_featurecounts.sh` to execute this. I save this script in a new directory under the `project_outputs` directory named `feature_counts`.
+Now I want to use `featureCounts` as it efficiently quantifies how many reads align to each gene, producing a gene-level count matrix that’s essential for downstream differential expression analysis. I plan to include this in the `MultiQC` report and use the generated `txt` to perform downstream analyses. I write a slurm script `07_run_featurecounts.sh` to execute this. I save this script in a new directory under the `project_outputs` directory named `feature_counts`.
 
 For the purposes of this report, please find just the `featureCounts` command within the slurm script below, with an explanation of each parameter.
 
@@ -254,6 +272,13 @@ featureCounts -T 24 -p --countReadPairs \
 *	`-o "$OUTFILE"`: Path to the output file where the read count matrix will be saved.
 *	`--minOverlap 10`: Requires at least 10 base pairs of overlap between a read and a feature (e.g., exon) for the read to be counted. This filters out spurious or partial alignments.
 *	`"$ALIGN_DIR"/Ctrl_*_Aligned.sortedByCoord.out.bam` and `"$ALIGN_DIR"/SLE_*_Aligned.sortedByCoord.out.bam`: These are the input BAM files for both control and SLE samples, sorted by coordinate (as required by featureCounts).
+
+I run the script using the following:
+
+```{bash, eval=FALSE}
+chmod +x 07_batch_align.sh
+sbatch 07_batch_align.sh
+```
 
 The script executes successfully, which I will include in the `MultiQC` below.
 
