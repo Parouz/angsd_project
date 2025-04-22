@@ -232,6 +232,7 @@ For the purposes of this report, please find just the `QoRTs` command within the
 
 ```{bash, eval=FALSE}
 java -Xmx96G -jar "$QORTS_JAR" QC \
+  --stranded \
   --generatePlots \
   "$bam" \
   "$GTF" \
@@ -241,6 +242,7 @@ java -Xmx96G -jar "$QORTS_JAR" QC \
 * `java -Xmx96G`: Allocates up to 96 GB of memory for the Java Virtual Machine (JVM), which is important for processing large BAM files efficiently without memory-related failures.
 * `-jar "$QORTS_JAR"`: Specifies the QoRTs executable JAR file, pointed to by the environment variable $QORTS_JAR. This file was located in `/athena/angsd/scratch/mef3005/share/envs/qorts/share/qorts-1.3.6-1/QoRTs.jar`
 * `QC`: Runs the Quality Control (QC) mode of QoRTs, which performs extensive quality checks on aligned RNA-seq data, generating numerous metrics and intermediate outputs.
+* `--stranded`: This tag ensures accurate QC reporting and gene-region mapping for stranded libraries, which we are working with
 * `--generatePlots`: Enables automatic generation of plots (e.g., splice junction profiles, alignment distributions, gene body coverage) based on the QC results. These visualizations are useful for quickly identifying issues with alignment, library prep, or annotation.
 * `"$bam"`: The input BAM file containing aligned RNA-seq reads, sorted by coordinate. This file is required for all QoRTs analyses.
 * `"$GTF"`: The reference gene annotation file in GTF format, used to interpret alignments in a genomic context (e.g., identifying exons, genes, splice junctions).
@@ -642,13 +644,13 @@ Several technical challenges emerged during the execution of this project, many 
 
 Another significant oversight occurred during the initial run of featureCounts, where I failed to include the --countReadPairs flag. This led to an overestimation of counts by roughly a factor of two, since paired-end reads were counted individually rather than as fragments. I later reran the analysis with the correct flag, ensuring accurate fragment-level quantification. Similarly, I initially neglected to specify the library strandedness using the -s flag in featureCounts, even though the library preparation protocol (TruSeq Stranded mRNA) produces strand-specific data. After identifying this, I corrected the command to use -s 2, ensuring reads were assigned to the correct strand, which is crucial for avoiding ambiguous gene assignments, especially in densely transcribed regions.
 
-Other challenges included handling Ensembl version numbers, which had to be stripped from gene IDs to maintain compatibility across annotation and enrichment tools, and managing inconsistencies in file naming that complicated batch processing scripts. Lastly, while QoRTs provided extensive quality control metrics, interpreting some outputs (such as strand tests and splice events) required revisiting documentation.
+Other challenges included handling Ensembl version numbers, which had to be stripped from gene IDs to maintain compatibility across annotation and enrichment tools, and managing inconsistencies in file naming that complicated batch processing scripts. The task was also very computationally expensive, as the samples were deep and many reads needed to be processed. Lastly, while QoRTs provided extensive quality control metrics, interpreting some outputs (such as strand tests and splice events) required revisiting documentation.
 
 ### Future Directions
 
-This project opens the door to several valuable avenues for future exploration. One natural extension would be to perform differential transcript usage analysis to assess changes at the isoform level, using tools like DEXSeq. These methods could uncover alternative splicing patterns or shifts in isoform expression that are not captured by gene-level analyses. Another promising direction is to stratify SLE patients based on disease severity, treatment status, or other clinical metadata, which could help pinpoint expression signatures associated with flare versus remission or response to therapy. The dataset included 16 samples from patients with less active SLE, so this could certainly be incorporated in a future iteration.
+This project opens the door to several valuable avenues for future exploration. One  extension would be to perform GSEA analysis using full ranked gene list to capture subtle trends missed by threshold-based approaches. Another idea is performing differential transcript usage analysis to assess changes at the isoform level, using tools like DEXSeq. These methods could uncover alternative splicing patterns or shifts in isoform expression that are not captured by gene-level analyses. Another promising direction is to stratify SLE patients based on disease severity, treatment status, or other clinical metadata, which could help pinpoint expression signatures associated with flare versus remission or response to therapy. The dataset included 16 samples from patients with less active SLE, so this could certainly be incorporated in a future iteration.
 
-Incorporating single-cell RNA-seq data could also offer more granular insights into T cell heterogeneity. Additionally, integration with epigenomic datasets (e.g., ATAC-seq or ChIP-seq) could help link observed transcriptional changes to upstream regulatory elements and transcription factor binding dynamics. Finally, future work could include machine learning approaches to identify gene expression patterns predictive of disease subtype, treatment response, or prognosis.
+Incorporating single-cell RNA-seq data could also offer more granular insights into T cell heterogeneity. Additionally, integration with epigenomic datasets (e.g., ATAC-seq or ChIP-seq) could help link observed transcriptional changes to upstream regulatory elements and transcription factor binding dynamics. Additionally, it would be helpful to explore the possibility of integrating with other SLE datasets to validate findings and explore broader immune cell involvement (e.g., CD8+, monocytes). Finally, future work could include machine learning approaches to identify gene expression patterns predictive of disease subtype, treatment response, or prognosis.
 
 ### Conclusion
 
