@@ -365,7 +365,7 @@ dds <- DESeq(dds)
 
 During normalization, `DESeq2` estimated size factors and dispersion values, replaced outliers in 325 genes, and applied the default threshold for the `minReplicatesForReplace` parameter (7). The model was then fitted and tested to prepare the dataset for differential expression analysis.
 
-### Exploratory Data Enalysis
+### Exploratory Data Analysis
 
 To assess overall data quality and detect potential batch effects or outliers, I performed exploratory data analysis using three approaches. First, I applied regularized log (rlog) transformation to the raw count matrix to stabilize variance across the range of mean values, which is particularly important for downstream visualization and clustering. Next, I generated a sample-to-sample correlation heatmap to evaluate the similarity in global gene expression profiles across all samples. Finally, I conducted principal component analysis (PCA) to visualize sample clustering and assess separation between the control and SLE groups.
 
