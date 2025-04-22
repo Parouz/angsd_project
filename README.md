@@ -46,3 +46,6 @@ The main RMarkdown file containing all code, results, visualizations, and writte
 
 ### `project_report_par4012.html`
 The rendered HTML version of the report for easy viewing in a browser.
+
+### `presentation_par4012.pptx`
+The final presentation on the project.
