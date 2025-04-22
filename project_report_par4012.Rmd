@@ -304,6 +304,7 @@ include_graphics("graphics/qorts_splice_loci.png")
 include_graphics("graphics/qorts_splice_events.png")
 include_graphics("graphics/qorts_strand_test.png")
 include_graphics("graphics/qorts_alignments.png")
+include_graphics("graphics/gene_body_coverage.png")
 include_graphics("graphics/featureCounts_assignment_plot.png")
 ```
 
@@ -322,7 +323,9 @@ QoRTs results offer complementary insight into read distribution across genic an
 
 The splice loci and splice events panels display reassuring consistency across all samples. Both control and SLE groups show abundant read support for known splice junctions, with only small contributions from novel loci or low-confidence regions. This consistency across sample groups indicates effective and uniform library preparation and supports the hypothesis that biologically meaningful differences—rather than technical artifacts—will drive differential splicing results.
 
-Finally, the strand specificity plot confirms that the dataset is overwhelmingly stranded in the fr-firststrand direction, in line with the TruSeq Stranded protocol used in the original study. Nearly all reads across all samples map to the expected strand, validating the use of strand-aware quantification methods (e.g., `-s 2` in `featureCounts`) and increasing confidence in annotation-driven analyses. No samples show a shift toward the wrong strand or exhibit ambiguous strand behavior, further affirming technical consistency.
+The strand specificity plot confirms that the dataset is overwhelmingly stranded in the fr-firststrand direction, in line with the TruSeq Stranded protocol used in the original study. Nearly all reads across all samples map to the expected strand, validating the use of strand-aware quantification methods (e.g., `-s 2` in `featureCounts`) and increasing confidence in annotation-driven analyses. No samples show a shift toward the wrong strand or exhibit ambiguous strand behavior, further affirming technical consistency.
+
+Finally, the gene body coverage plot for Control 1 demonstrates an even distribution of reads across the transcript length, peaking near the center with minimal 5′ or 3′ bias. This bell-shaped curve suggests high RNA integrity and confirms that the libraries are not degraded or skewed in coverage. This was directly lifted from the `QC.multiPlot.pdf` file created by `QoRTs`.
 
 **featureCounts:**
 The featureCounts plot, summarizing assignment rates across all samples, confirms that the majority of reads in each sample were successfully assigned to annotated gene features. Most samples show large light blue bars representing assigned reads, while unassigned categories—particularly “No Features” and “Ambiguity”—are minimal or moderate. As expected, slight differences in unassignment rates occur across samples due to biological variability and sample-specific expression complexity.
@@ -640,11 +643,12 @@ Moreover, gene ontology enrichment analysis using clusterProfiler and visualizat
 [^2]: Hao Li, Afroditi Boulougoura, Yushiro Endo, George C. Tsokos, Abnormalities of T cells in systemic lupus erythematosus: new insights in pathogenesis and therapeutic strategies, Journal of Autoimmunity, Volume 132, 2022, 102870, ISSN 0896-8411, https://doi.org/10.1016/j.jaut.2022.102870.
 
 ### Challenges
+
 Several technical challenges emerged during the execution of this project, many of which offered learning opportunities. One of the earliest issues stemmed from the stringency of the STAR alignment parameters, particularly the use of --outFilterMultimapNmax 1, which discards any reads that map to more than one genomic location. While this ensures high-confidence alignments, it is overly conservative for transcriptomic data, where multimapping often reflects biological realities such as gene families, pseudogenes, or paralogs. A more nuanced approach would be to retain multimappers and allow downstream tools (e.g., feature quantifiers or statistical models) to handle them appropriately.
 
 Another significant oversight occurred during the initial run of featureCounts, where I failed to include the --countReadPairs flag. This led to an overestimation of counts by roughly a factor of two, since paired-end reads were counted individually rather than as fragments. I later reran the analysis with the correct flag, ensuring accurate fragment-level quantification. Similarly, I initially neglected to specify the library strandedness using the -s flag in featureCounts, even though the library preparation protocol (TruSeq Stranded mRNA) produces strand-specific data. After identifying this, I corrected the command to use -s 2, ensuring reads were assigned to the correct strand, which is crucial for avoiding ambiguous gene assignments, especially in densely transcribed regions.
 
-Other challenges included handling Ensembl version numbers, which had to be stripped from gene IDs to maintain compatibility across annotation and enrichment tools, and managing inconsistencies in file naming that complicated batch processing scripts. The task was also very computationally expensive, as the samples were deep and many reads needed to be processed. Lastly, while QoRTs provided extensive quality control metrics, interpreting some outputs (such as strand tests and splice events) required revisiting documentation.
+Other challenges included handling Ensembl version numbers, which had to be stripped from gene IDs to maintain compatibility across annotation and enrichment tools, and managing inconsistencies in file naming that complicated batch processing scripts. The task was also very computationally expensive, as the samples were deep and many reads needed to be processed. Lastly, the sample size was relatively small, and it would have been helpful to have visibility on the severity of disease for the SLE patients.
 
 ### Future Directions
 
@@ -655,3 +659,4 @@ Incorporating single-cell RNA-seq data could also offer more granular insights i
 ### Conclusion
 
 In conclusion, this project successfully employed RNA-seq analysis to characterize gene expression differences in CD4⁺ T cells between SLE patients and healthy controls. The results supported the hypothesis and revealed a robust type I interferon signature and activation of cell cycle–related pathways in lupus CD4⁺ T cells, both of which are consistent with previous reports and known disease mechanisms. Despite several technical challenges, careful quality control and methodological revisions helped ensure the reliability of the results. The insights gained here provide a foundation for deeper mechanistic investigations into T cell dysfunction in SLE and support the ongoing development of transcriptomic biomarkers for autoimmune disease monitoring and treatment.
+
